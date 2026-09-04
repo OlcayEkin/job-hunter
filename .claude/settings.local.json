@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:www.glassdoor.com)",
+      "WebFetch(domain:tr.indeed.com)",
+      "WebFetch(domain:www.linkedin.com)",
+      "WebFetch(domain:www.kariyer.net)",
+      "WebFetch(domain:tr.linkedin.com)",
+      "Skill(schedule)"
+    ]
+  }
+}

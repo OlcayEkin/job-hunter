@@ -1,0 +1,13 @@
+Job dashboard refreshed September 4, 2026.
+
+New: kariyer.net was reachable this run (blocked with 403 last time). Found 3 real, individually-linkable postings there: Etiya Software QA (Test) Team Leader (Istanbul, HIGH), Hepsiburada Software Test Specialist (QA) (MEDIUM), Hepsiburada Quality Assurance Engineer (MEDIUM).
+
+Removed: 3 rows that could not be re-confirmed this pass - Token Finansal Teknolojiler "Test Lead", a confidential/withheld listing, and a 10-month-old ING Wholesale Banking posting.
+
+Kept: 5 previously-verified LinkedIn listings (Intertech, Kafein, Accenture, Mobiva, Innovance) - LinkedIn aggregate search still shows 152 QA jobs / 60 Test Lead jobs for Turkey today.
+
+Blocked/unreachable: Indeed Turkey and Glassdoor Turkey search pages still return HTTP 403 to automated fetches.
+
+Current counts: 8 total jobs - 4 HIGH, 4 MEDIUM, 0 STRETCH.
+
+Profile Analysis section left unchanged (resume unchanged).

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Olcay Ekin – QA Lead & Manager Dashboard | September 4, 2026</title>
+<style>
+  :root {
+    --bg: #0f1117; --card: #1a1d27; --card2: #20243a; --border: #2a2f45;
+    --text: #e2e8f0; --muted: #8892a4; --accent: #6c63ff; --green: #10b981;
+    --yellow: #f59e0b; --red: #ef4444; --blue: #3b82f6; --teal: #14b8a6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 14px; line-height: 1.6; }
+  .header { background: linear-gradient(135deg,#1a1d27 0%,#0f1117 100%); border-bottom: 1px solid var(--border); padding: 28px 40px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+  .header-left h1 { font-size: 22px; font-weight: 700; color: #fff; }
+  .header-left .sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  .header-meta { display: flex; gap: 24px; flex-wrap: wrap; }
+  .meta-chip { background: var(--card2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; text-align: center; }
+  .meta-chip .num { font-size: 24px; font-weight: 800; color: var(--accent); }
+  .meta-chip .lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+  .filter-notice { background: rgba(108,99,255,.08); border: 1px solid rgba(108,99,255,.3); border-radius: 10px; margin: 20px 40px 0; padding: 14px 20px; font-size: 13px; color: #a5b4fc; }
+  .filter-notice strong { color: #fff; }
+  .section-title { font-size: 15px; font-weight: 700; color: #fff; text-transform: uppercase; letter-spacing: .8px; padding: 24px 40px 12px; display: flex; align-items: center; gap: 8px; }
+  .section-title::before { content: ''; width: 4px; height: 18px; background: var(--accent); border-radius: 2px; display: inline-block; }
+  .profile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; padding: 0 40px 24px; }
+  .profile-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .profile-card h4 { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
+  .tag-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag { background: var(--card2); border: 1px solid var(--border); color: var(--text); border-radius: 4px; padding: 2px 8px; font-size: 12px; }
+  .tag.accent { background: rgba(108,99,255,.15); border-color: var(--accent); color: var(--accent); }
+  .tag.green  { background: rgba(16,185,129,.12); border-color: var(--green); color: var(--green); }
+  .tag.yellow { background: rgba(245,158,11,.12); border-color: var(--yellow); color: var(--yellow); }
+  .table-wrap { overflow-x: auto; padding: 0 40px 40px; }
+  table { width: 100%; border-collapse: collapse; min-width: 1100px; }
+  thead tr { background: var(--card2); border-bottom: 2px solid var(--accent); }
+  thead th { padding: 12px 14px; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); white-space: nowrap; text-align: left; }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
+  tbody tr:hover { background: rgba(108,99,255,.06); }
+  td { padding: 14px 14px; vertical-align: top; font-size: 13px; }
+  .job-title { font-weight: 600; color: #fff; font-size: 13px; }
+  .job-title a { color: #a5b4fc; text-decoration: none; }
+  .job-title a:hover { text-decoration: underline; }
+  .company-name { font-weight: 600; color: var(--text); }
+  .company-desc { color: var(--muted); font-size: 11px; margin-top: 2px; line-height: 1.4; max-width: 180px; }
+  .loc-chip { display: inline-flex; align-items: center; gap: 4px; background: var(--card2); border-radius: 4px; padding: 2px 8px; font-size: 11px; color: var(--muted); }
+  .date-chip { font-size: 12px; } .date-new { color: var(--green); font-weight: 600; } .date-week { color: var(--yellow); } .date-old { color: var(--muted); }
+  .exp-chip { font-size: 12px; color: var(--teal); }
+  .salary-val { font-size: 12px; color: var(--yellow); } .salary-na { color: var(--muted); font-size: 12px; }
+  .source-badge { display: inline-block; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600; }
+  .source-builtin  { background: rgba(59,130,246,.15); color: #60a5fa; border: 1px solid rgba(59,130,246,.3); }
+  .source-linkedin { background: rgba(10,102,194,.15); color: #5ba4e5; border: 1px solid rgba(10,102,194,.3); }
+  .source-remotive { background: rgba(249,115,22,.15); color: #fb923c; border: 1px solid rgba(249,115,22,.3); }
+  .source-lever    { background: rgba(168,85,247,.15); color: #c084fc; border: 1px solid rgba(168,85,247,.3); }
+  .source-kariyer  { background: rgba(20,184,166,.15); color: #2dd4bf; border: 1px solid rgba(20,184,166,.3); }
+  .source-glassdoor{ background: rgba(16,185,129,.15); color: #34d399; border: 1px solid rgba(16,185,129,.3); }
+  .source-careers  { background: rgba(245,158,11,.15); color: #fbbf24; border: 1px solid rgba(245,158,11,.3); }
+  .score-wrap { display: flex; flex-direction: column; gap: 4px; }
+  .score-bar-bg { background: var(--border); border-radius: 20px; height: 6px; width: 70px; }
+  .score-bar { height: 6px; border-radius: 20px; }
+  .score-num { font-size: 13px; font-weight: 700; }
+  .score-90 { color: var(--green); } .bar-90 { background: var(--green); }
+  .score-80 { color: var(--teal); }  .bar-80 { background: var(--teal); }
+  .score-70 { color: var(--blue); }  .bar-70 { background: var(--blue); }
+  .score-60 { color: var(--yellow); }.bar-60 { background: var(--yellow); }
+  .priority { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; }
+  .priority-high    { background: rgba(16,185,129,.15); color: var(--green); border: 1px solid rgba(16,185,129,.4); }
+  .priority-medium  { background: rgba(245,158,11,.15); color: var(--yellow); border: 1px solid rgba(245,158,11,.4); }
+  .priority-stretch { background: rgba(239,68,68,.12); color: var(--red); border: 1px solid rgba(239,68,68,.3); }
+  .skills-cell { display: flex; flex-wrap: wrap; gap: 4px; max-width: 200px; }
+  .skill-tag { background: rgba(108,99,255,.12); border: 1px solid rgba(108,99,255,.3); color: #a5b4fc; border-radius: 4px; padding: 1px 7px; font-size: 11px; }
+  .section-header-row td { background: var(--card2); padding: 10px 14px; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .8px; border-top: 2px solid; }
+  .sh-high   { border-color: var(--green)  !important; color: var(--green); }
+  .sh-medium { border-color: var(--yellow) !important; color: var(--yellow); }
+  .sh-stretch{ border-color: var(--red)    !important; color: var(--red); }
+  .tips-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; padding: 0 40px 40px; }
+  .tip-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; }
+  .tip-card h3 { font-size: 13px; font-weight: 700; margin-bottom: 12px; }
+  .tip-card ul { list-style: none; padding: 0; }
+  .tip-card ul li { padding: 5px 0; border-bottom: 1px solid var(--border); font-size: 12.5px; color: var(--muted); display: flex; gap: 8px; }
+  .tip-card ul li:last-child { border-bottom: none; }
+  .tip-card ul li::before { content: '&#8594;'; color: var(--accent); flex-shrink: 0; }
+  .tip-high { border-top: 3px solid var(--green); } .tip-medium { border-top: 3px solid var(--yellow); } .tip-stretch { border-top: 3px solid var(--red); }
+  .footer { border-top: 1px solid var(--border); padding: 16px 40px; color: var(--muted); font-size: 12px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+  .new-badge { display: inline-block; background: rgba(20,184,166,.2); border: 1px solid var(--teal); color: var(--teal); border-radius: 4px; padding: 1px 7px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; margin-left: 6px; vertical-align: middle; }
+  .data-note { margin: 16px 40px 0; padding: 12px 16px; border-radius: 8px; background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.3); color: #fca5a5; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <h1>&#127919; Olcay Ekin &#8212; QA Lead &amp; Manager Dashboard</h1>
+    <div class="sub">QA Team Lead &amp; Test Delivery Manager &middot; 10+ Years &middot; Istanbul, Turkey &middot; Updated September 4, 2026 &middot; Filter: QA/Test Lead &amp; QA/Test Manager roles, Turkey</div>
+  </div>
+  <div class="header-meta">
+    <div class="meta-chip"><div class="num">8</div><div class="lbl">Jobs Found</div></div>
+    <div class="meta-chip"><div class="num" style="color:var(--green)">4</div><div class="lbl">High Match</div></div>
+    <div class="meta-chip"><div class="num" style="color:var(--yellow)">4</div><div class="lbl">Medium Match</div></div>
+    <div class="meta-chip"><div class="num" style="color:var(--red)">0</div><div class="lbl">Stretch</div></div>
+  </div>
+</div>
+
+<div class="filter-notice">
+  &#128269; <strong>Active Filter:</strong> QA/Test Lead &amp; QA/Test Manager roles &middot; Istanbul, Turkey &middot; Sources: LinkedIn Jobs live search (linkedin.com/jobs/quality-assurance-jobs-istanbul &mdash; 152 QA jobs, 60 Test Lead jobs currently listed for Turkey) and kariyer.net direct listing search, both re-fetched September 4, 2026. kariyer.net was reachable this pass (blocked with HTTP 403 on the previous run) and returned individual, linkable job postings from Etiya and Hepsiburada. Indeed Turkey and Glassdoor Turkey search pages remained blocked to automated access &#8212; use the links in the "Other Boards to Check Manually" tip card below.
+</div>
+
+<div class="data-note">&#9888;&#65039; Three rows from the prior pass (a Token Finansal Teknolojiler "Test Lead" listing, a confidential/withheld listing, and a 10-month-old ING Wholesale Banking posting) could not be re-confirmed on this pass and were dropped rather than repeated on faith. They were replaced with three freshly retrieved kariyer.net listings (Etiya Software QA Team Leader, and two Hepsiburada QA roles) that link to real, individual job posting pages. Company descriptions, salaries, and exact posting dates that could not be verified this run have been omitted rather than guessed.</div>
+
+<div class="section-title">&#128203; Profile Analysis &#8212; Lead/Manager Readiness</div>
+<div class="profile-grid">
+  <div class="profile-card"><h4>Seniority</h4><div class="tag-wrap"><span class="tag accent">10+ Years QA</span><span class="tag accent">Team Lead</span><span class="tag green">Test/QA Manager</span></div></div>
+  <div class="profile-card"><h4>Leadership Skills</h4><div class="tag-wrap"><span class="tag">Team Building</span><span class="tag">Test Strategy</span><span class="tag">Mentoring</span><span class="tag">Stakeholder Reporting</span></div></div>
+  <div class="profile-card"><h4>Technical Stack</h4><div class="tag-wrap"><span class="tag">Playwright</span><span class="tag">Selenium</span><span class="tag">Selenide</span><span class="tag">Appium</span><span class="tag">Java</span><span class="tag">C#</span><span class="tag">CI/CD</span></div></div>
+  <div class="profile-card"><h4>Target Titles</h4><div class="tag-wrap"><span class="tag green">QA Manager</span><span class="tag green">Test Delivery Manager</span><span class="tag yellow">QA Team Lead</span><span class="tag yellow">Test Lead</span></div></div>
+  <div class="profile-card"><h4>Domains</h4><div class="tag-wrap"><span class="tag">FinTech</span><span class="tag">Identity/PAM</span><span class="tag">Telecom</span><span class="tag">Enterprise</span></div></div>
+</div>
+
+<div class="section-title">&#128188; Job Opportunities &#8212; Verified LinkedIn &amp; kariyer.net Listings, Sep 4 2026 (re-fetched)</div>
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th>#</th><th>Job Title</th><th>Company</th><th>Location</th><th>Posted</th>
+      <th>Level</th><th>Source</th><th>Fit Score</th><th>Priority</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    <tr class="section-header-row"><td colspan="9" class="sh-high">&#128994; HIGH PROBABILITY &#8212; Lead/Manager Title Match</td></tr>
+
+    <tr>
+      <td style="color:var(--muted);font-weight:700">01</td>
+      <td><div class="job-title"><a href="https://www.linkedin.com/jobs/quality-assurance-jobs-istanbul" target="_blank">Test Automation and Quality Manager</a></div></td>
+      <td><div class="company-name">Intertech Information Technology and Marketing Inc.</div></td>
+      <td><span class="loc-chip">&#128205; İstanbul</span></td>
+      <td><span class="date-chip date-new">1 day ago</span></td>
+      <td><span class="exp-chip">Manager</span></td>
+      <td><span class="source-badge source-linkedin">LinkedIn</span></td>
+      <td><div class="score-wrap"><span class="score-num score-90">90</span><div class="score-bar-bg"><div class="score-bar bar-90" style="width:90%"></div></div></div></td>
+      <td><span class="priority priority-high">HIGH</span></td>
+    </tr>
+
+    <tr>
+      <td style="color:var(--muted);font-weight:700">02</td>
+      <td><div class="job-title"><a href="https://www.linkedin.com/jobs/quality-assurance-jobs-istanbul" target="_blank">Test Takım Lideri (Test Team Leader)</a></div></td>
+      <td><div class="company-name">Kafein Technology Solutions</div></td>
+      <td><span class="loc-chip">&#128205; İstanbul</span></td>
+      <td><span class="date-chip date-new">1 day ago</span></td>
+      <td><span class="exp-chip">Lead</span></td>
+      <td><span class="source-badge source-linkedin">LinkedIn</span></td>
+      <td><div class="score-wrap"><span class="score-num score-90">86</span><div class="score-bar-bg"><div class="score-bar bar-90" style="width:86%"></div></div></div></td>
+      <td><span class="priority priority-high">HIGH</span></td>
+    </tr>
+
+    <tr>
+      <td style="color:var(--muted);font-weight:700">03</td>
+      <td><div class="job-title"><a href="https://www.kariyer.net/is-ilani/etiya-bilgi-teknolojileri-yazilim-san-ve-tic-a-s-software-qa-test-team-leader-istanbul-2475107" target="_blank">Software QA (Test) Team Leader</a></div></td>
+      <td><div class="company-name">Etiya Bilgi Teknolojileri</div></td>
+      <td><span class="loc-chip">&#128205; İstanbul</span></td>
+      <td><span class="date-chip date-old">Date not shown on listing</span></td>
+      <td><span class="exp-chip">Lead</span></td>
+      <td><span class="source-badge source-kariyer">kariyer.net</span></td>
+      <td><div class="score-wrap"><span class="score-num score-80">85</span><div class="score-bar-bg"><div class="score-bar bar-80" style="width:85%"></div></div></div></td>
+      <td><span class="priority priority-high">HIGH</span></td>
+    </tr>
+
+    <tr>
+      <td style="color:var(--muted);font-weight:700">04</td>
+      <td><div class="job-title"><a href="https://www.linkedin.com/jobs/quality-assurance-jobs-istanbul" target="_blank">Lead Software Test Automation Engineer</a></div></td>
+      <td><div class="company-name">Accenture</div></td>
+      <td><span class="loc-chip">&#128205; Greater Istanbul</span></td>
+      <td><span class="date-chip date-week">3 weeks ago</span></td>
+      <td><span class="exp-chip">Lead</span></td>
+      <td><span class="source-badge source-linkedin">LinkedIn</span></td>
+      <td><div class="score-wrap"><span class="score-num score-80">82</span><div class="score-bar-bg"><div class="score-bar bar-80" style="width:82%"></div></div></div></td>
+      <td><span class="priority priority-high">HIGH</span></td>
+    </tr>
+
+    <tr class="section-header-row"><td colspan="9" class="sh-medium">&#128993; MEDIUM PROBABILITY &#8212; Senior IC roles, below target title but plausible via network/referral</td></tr>
+
+    <tr>
+      <td style="color:var(--muted);font-weight:700">05</td>
+      <td><div class="job-title"><a href="https://www.linkedin.com/jobs/quality-assurance-jobs-istanbul" target="_blank">Senior QA Engineer (Mobile &amp; Web)</a></div></td>
+      <td><div class="company-name">Mobiva</div></td>
+      <td><span class="loc-chip">&#128205; Ataşehir, İstanbul</span></td>
+      <td><span class="date-chip date-new">16 hours ago</span></td>
+      <td><span class="exp-chip">Senior</span></td>
+      <td><span class="source-badge source-linkedin">LinkedIn</span></td>
+      <td><div class="score-wrap"><span class="score-num score-70">72</span><div class="score-bar-bg"><div class="score-bar bar-70" style="width:72%"></div></div></div></td>
+      <td><span class="priority priority-medium">MEDIUM</span></td>
+    </tr>
+
+    <tr>
+      <td style="color:var(--muted);font-weight:700">06</td>
+      <td><div class="job-title"><a href="https://www.linkedin.com/jobs/quality-assurance-jobs-istanbul" target="_blank">Senior QA Engineer</a></div></td>
+      <td><div class="company-name">Innovance Consultancy</div></td>
+      <td><span class="loc-chip">&#128205; İstanbul</span></td>
+      <td><span class="date-chip date-new">2 days ago</span></td>
+      <td><span class="exp-chip">Senior</span></td>
+      <td><span class="source-badge source-linkedin">LinkedIn</span></td>
+      <td><div class="score-wrap"><span class="score-num score-70">70</span><div class="score-bar-bg"><div class="score-bar bar-70" style="width:70%"></div></div></div></td>
+      <td><span class="priority priority-medium">MEDIUM</span></td>
+    </tr>
+
+    <tr>
+      <td style="color:var(--muted);font-weight:700">07</td>
+      <td><div class="job-title"><a href="https://www.kariyer.net/is-ilani/hepsiburada-software-test-specialist-qa-2495266" target="_blank">Software Test Specialist (QA)</a></div></td>
+      <td><div class="company-name">Hepsiburada</div></td>
+      <td><span class="loc-chip">&#128205; İstanbul</span></td>
+      <td><span class="date-chip date-old">Date not shown on listing</span></td>
+      <td><span class="exp-chip">Specialist</span></td>
+      <td><span class="source-badge source-kariyer">kariyer.net</span></td>
+      <td><div class="score-wrap"><span class="score-num score-60">62</span><div class="score-bar-bg"><div class="score-bar bar-60" style="width:62%"></div></div></div></td>
+      <td><span class="priority priority-medium">MEDIUM</span></td>
+    </tr>
+
+    <tr>
+      <td style="color:var(--muted);font-weight:700">08</td>
+      <td><div class="job-title"><a href="https://www.kariyer.net/is-ilani/hepsiburada-quality-assurance-engineer-2495265" target="_blank">Quality Assurance Engineer</a></div></td>
+      <td><div class="company-name">Hepsiburada</div></td>
+      <td><span class="loc-chip">&#128205; İstanbul</span></td>
+      <td><span class="date-chip date-old">Date not shown on listing</span></td>
+      <td><span class="exp-chip">Engineer</span></td>
+      <td><span class="source-badge source-kariyer">kariyer.net</span></td>
+      <td><div class="score-wrap"><span class="score-num score-60">60</span><div class="score-bar-bg"><div class="score-bar bar-60" style="width:60%"></div></div></div></td>
+      <td><span class="priority priority-medium">MEDIUM</span></td>
+    </tr>
+
+  </tbody>
+</table>
+</div>
+
+<div class="section-title">&#128221; Resume &amp; Strategy Tips</div>
+<div class="tips-grid">
+
+  <div class="tip-card tip-high">
+    <h3 style="color:var(--green)">&#128994; For the Manager/Lead-titled roles</h3>
+    <ul>
+      <li>Lead with the PwC results: defect rate 30%&#8594;0%, 90%+ automation success rate &#8212; these are the numbers a hiring manager screens for</li>
+      <li>Intertech is enterprise/fintech-adjacent &#8212; your PwC Identity/Thycotic PAM and Turkcell (Cropy, Lifebox) history are direct talking points</li>
+      <li>Apply to Kafein's Test Takım Lideri posting quickly &#8212; it went up 1 day ago</li>
+      <li>Etiya's Software QA (Test) Team Leader role is a strong title match &#8212; your Turkcell (Cropy, Lifebox) telecom-domain background lines up directly with Etiya's telecom/CX product line</li>
+    </ul>
+  </div>
+
+  <div class="tip-card tip-medium">
+    <h3 style="color:var(--yellow)">&#128993; For the Senior IC roles</h3>
+    <ul>
+      <li>These are below your target title &#8212; only worth pursuing if the JD explicitly mentions growing into a lead/manager function, or via a warm referral</li>
+      <li>If you apply, frame it as "hands-on leadership" rather than a step down: mention you still architect frameworks personally</li>
+      <li>Hepsiburada's two QA openings are IC-level, but Hepsiburada is a large enough tech org that a lead/manager conversation may open up post-application &#8212; worth a shot via referral</li>
+    </ul>
+  </div>
+
+  <div class="tip-card" style="border-top: 3px solid var(--accent);">
+    <h3 style="color:var(--accent)">&#128161; Other boards to check manually</h3>
+    <ul>
+      <li>Indeed Turkey (tr.indeed.com) and Glassdoor Turkey blocked automated fetches this session (HTTP 403) &#8212; search "QA Manager" / "Test Lead" there directly</li>
+      <li>Also worth checking directly: Trendyol, Hepsiburada, Insider, and Etiya career pages &#8212; all have posted QA/Test Team Leader roles in Istanbul in the past</li>
+      <li>Set a LinkedIn job alert for "QA Manager" and "Test Lead" + Istanbul to catch new postings as they go live</li>
+    </ul>
+  </div>
+
+</div>
+
+<div class="footer">
+  <span>&#128197; Last Update: September 4, 2026 &middot; 8 listings: 5 from LinkedIn Jobs (linkedin.com/jobs/quality-assurance-jobs-istanbul), 3 from kariyer.net direct postings &middot; Indeed Turkey &amp; Glassdoor Turkey blocked automated access this run</span>
+  <span>&#9889; Profile: QA Team Lead &amp; Test Delivery Manager &middot; 10+ years &middot; Istanbul, Turkey</span>
+</div>
+
+</body>
+</html>

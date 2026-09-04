@@ -1,0 +1,52 @@
+[
+  {
+    "company": "Trendyol",
+    "role": "QA Manager",
+    "dateApplied": "2026-09-04",
+    "status": "Applied",
+    "matchScore": "A",
+    "nextAction": "Follow up via LinkedIn",
+    "lastContactDate": "2026-09-04",
+    "link": "https://trendyol.com/careers"
+  },
+  {
+    "company": "Hepsiburada",
+    "role": "QA Automation Lead",
+    "dateApplied": "2026-09-03",
+    "status": "Interviewing",
+    "matchScore": "B+",
+    "nextAction": "Prepare for Tech Round",
+    "lastContactDate": "2026-09-02",
+    "link": "https://careers.hepsiburada.com/"
+  },
+  {
+    "company": "NBS (AI Automation Firm)",
+    "role": "QA Manager",
+    "dateApplied": "",
+    "status": "Wishlist",
+    "matchScore": "A+",
+    "nextAction": "Email yakupkurhan@nbshr.net (Ref: QAM)",
+    "lastContactDate": "",
+    "link": "mailto:yakupkurhan@nbshr.net?subject=Application for QA Manager (Ref: QAM)"
+  },
+  {
+    "company": "Insider",
+    "role": "Quality Engineering Lead",
+    "dateApplied": "",
+    "status": "Wishlist",
+    "matchScore": "A",
+    "nextAction": "Research current QE openings",
+    "lastContactDate": "",
+    "link": "https://useinsider.com/careers/"
+  },
+  {
+    "company": "Turkish Airlines Tech",
+    "role": "Software QA Team Lead",
+    "dateApplied": "",
+    "status": "Wishlist",
+    "matchScore": "B+",
+    "nextAction": "Check career portal",
+    "lastContactDate": "",
+    "link": "https://turkishairlines.com/en-int/careers"
+  }
+]
