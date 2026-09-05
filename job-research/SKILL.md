@@ -148,5 +148,75 @@ Priority badge
 - **Turkey only.** Reject postings outside Turkey or remote roles restricted to other regions.
 - **Recency first.** Prefer ≤3 days old; accept up to 7 days if needed to reach 5+ new listings.
 - **Honest scoring.** Score based on actual skill overlap with the resume, not wishful thinking.
+- **Never fabricate.** Only include jobs actually retrieved from a real search/fetch result in
+  this run — no invented salaries, descriptions, or posting URLs. If a source (Indeed, kariyer.net,
+  Glassdoor, etc.) blocks the fetch, say so in the filter notice / footer instead of making up data.
 - **Surgical HTML edits.** Use targeted `Edit` calls rather than rewriting the whole file.
   Verify balanced tags after each edit.
+
+---
+
+## Daily automation (macOS launchd + Gmail SMTP)
+
+This workflow is wired up to run unattended every day at **13:00 local time (Europe/Istanbul)** and
+email the result. If the user asks to set this up again, re-check, or replicate it elsewhere, this
+is the exact setup already deployed — **read this whole section before changing anything**, it
+documents two real production bugs that ate a debugging session each.
+
+**Files (all under `~/.job-hunter-automation/`, deliberately NOT under `~/Desktop`):**
+- `update_dashboard.sh` — the runner script. It calls the local `claude` CLI in headless mode
+  (`claude -p "<prompt>" --allowedTools "Read,Write,Edit,Bash,WebSearch,WebFetch"`) with a prompt
+  that: re-reads the resume PDF (still on Desktop), searches LinkedIn/Indeed/kariyer.net/Glassdoor/
+  Empatik HR for fresh QA Lead/Manager roles in Turkey, rebuilds the dashboard table in
+  `~/Desktop/job-hunter/job-dashboard-2026-05-30.html` in place, and writes a short plain-text
+  summary (5–10 lines, no markdown) to `last_summary.txt`. It then emails the summary + dashboard
+  via `send_email.py`, with a `send_failure_notification` fallback (macOS banner + failure email)
+  if the `claude` step or the email step itself fails.
+- `send_email.py` — sends mail via **Gmail SMTP** (`smtp.gmail.com:587`, STARTTLS) using Python's
+  stdlib `smtplib`/`email` — no Mail.app, no AppleScript. Reads credentials from `gmail.env`.
+  Usage: `send_email.py <subject> <body_text_file> [attachment_path]`.
+- `gmail.env` — `chmod 600`, holds `GMAIL_ADDRESS=olcayekinn@gmail.com` and a Gmail **App Password**
+  (`GMAIL_APP_PASSWORD=...`, from myaccount.google.com/apppasswords). Never commit this file or
+  print its contents; it lives outside the git repo on purpose.
+- `last_summary.txt`, `email_body.txt`, `failure_body.txt` — per-run scratch files.
+- `update.log`, `launchd.out.log`, `launchd.err.log` — run logs, useful for debugging a missed or
+  failed run.
+- `~/Library/LaunchAgents/com.olcay.jobdashboard.update.plist` — the launchd job.
+  `ProgramArguments` is **just the script path** (`["/Users/olcayekin/.job-hunter-automation/update_dashboard.sh"]`),
+  relying on its `#!/bin/zsh` shebang — do not wrap it in `["/bin/zsh", "-lc", "path"]`, see bug #2
+  below. `StartCalendarInterval` Hour 13 / Minute 0, `RunAtLoad` false. Load/reload with:
+  `launchctl unload ~/Library/LaunchAgents/com.olcay.jobdashboard.update.plist 2>/dev/null; launchctl load ~/Library/LaunchAgents/com.olcay.jobdashboard.update.plist`.
+  To test immediately instead of waiting for 13:00: `launchctl kickstart -p gui/$(id -u)/com.olcay.jobdashboard.update`
+  (real launchd invocation — do NOT use `env -i ... zsh -lc script` to "simulate" it, that strips
+  keychain/session context the real GUI-domain agent has and produces misleading failures, e.g. a
+  fake "Not logged in · Please run /login" from `claude`).
+
+**Two bugs already found and fixed here — don't reintroduce them:**
+
+1. **PATH.** launchd runs agents with a minimal `PATH=/usr/bin:/bin:/usr/sbin:/sbin` — it does not
+   include `~/.local/bin` (where `claude` lives) or `/opt/homebrew/bin` (brew/gh). The script
+   hardcodes `export PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"` at the top.
+   Symptom without this fix: `command not found: claude`, exit 127.
+
+2. **iCloud Desktop & Documents sync.** The user has `FXICloudDriveDesktop=1`, so `~/Desktop` is
+   backed by Apple's FileProvider framework. launchd's plain `zsh` process lacks the entitlement to
+   materialize files through that provider, so trying to `exec` a script that lives under
+   `~/Desktop` fails with a misleading `zsh: can't open input file: <path>` — even though the exact
+   same file opens fine when run manually from an interactive terminal (which does have the needed
+   entitlement/session context). This is why the runner script and its logs live in
+   `~/.job-hunter-automation/` instead of `~/Desktop/job-hunter/.automation/`. Only the *runner
+   script* needed to move — the dashboard HTML/resume can stay on Desktop, since those are read/
+   written by the `claude` subprocess, not launchd's zsh directly, and that path has worked fine.
+   **If this error ever reappears for a new script, suspect this before anything else** — it looks
+   exactly like a permissions or syntax problem but isn't.
+
+**Caveats to keep in mind:**
+- launchd only fires while the Mac is awake, logged in, and not asleep at 13:00 — it does not
+  catch up missed runs.
+- The Gmail App Password must stay valid; if the user changes their Google account password or
+  revokes app passwords, `send_email.py` will fail (the failure-notification path should still fire
+  a macOS banner, but the failure *email* itself would also fail in that scenario — the banner is
+  the only guaranteed signal at that point).
+- This is a **local**, not a cloud, routine — it depends on this specific Mac. It cannot be
+  replicated via a `RemoteTrigger`/cloud routine because the dashboard files live outside git and
+  the cloud sandbox can't reach this filesystem, this Mac's keychain, or `~/.job-hunter-automation/`.
