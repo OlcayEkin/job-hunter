@@ -191,7 +191,7 @@ documents two real production bugs that ate a debugging session each.
   keychain/session context the real GUI-domain agent has and produces misleading failures, e.g. a
   fake "Not logged in · Please run /login" from `claude`).
 
-**Two bugs already found and fixed here — don't reintroduce them:**
+**Three bugs already found and fixed here — don't reintroduce them:**
 
 1. **PATH.** launchd runs agents with a minimal `PATH=/usr/bin:/bin:/usr/sbin:/sbin` — it does not
    include `~/.local/bin` (where `claude` lives) or `/opt/homebrew/bin` (brew/gh). The script
@@ -209,6 +209,22 @@ documents two real production bugs that ate a debugging session each.
    written by the `claude` subprocess, not launchd's zsh directly, and that path has worked fine.
    **If this error ever reappears for a new script, suspect this before anything else** — it looks
    exactly like a permissions or syntax problem but isn't.
+
+3. **No timeout on `claude -p`.** On 2026-09-06 the 13:00 scheduled run's `claude -p` call hung
+   indefinitely — still alive 22+ hours later when discovered the next morning (`ps` showed
+   `STARTED = Sun 6 Eyl 13:06:59`, `ELAPSED = 22:05:19`). Because the process never exited, neither
+   the success path nor the failure-notification path ever fired (the failure path only triggers on
+   non-zero exit) — **no email, no failure alert, nothing**. Worse, launchd won't start a second
+   instance of the same label while one is still "running", so it also silently blocked the next
+   day's (Sep 7) scheduled run until the stuck process was manually `kill -9`'d. Fixed by wrapping
+   the call: `gtimeout --kill-after=30 900 claude -p "$PROMPT" ...` (900s = 15 min hard cap, SIGTERM
+   then SIGKILL 30s later if still alive), with an explicit `exit 124` branch that sends a distinct
+   "claude -p hung and was killed" failure email. macOS has no built-in `timeout`, so this required
+   `brew install coreutils` for `gtimeout` — the script also checks `command -v gtimeout` up front
+   and refuses to run unbounded if it's missing, rather than silently skipping the guard.
+   **If a scheduled run appears to have been skipped with no email either way, check for a stuck
+   process first** (`ps aux | grep "claude -p"`, or `launchctl print gui/<uid>/com.olcay.jobdashboard.update`
+   and look for `state = running` with an old start time) before assuming it's a launchd config issue.
 
 **Caveats to keep in mind:**
 - launchd only fires while the Mac is awake, logged in, and not asleep at 13:00 — it does not
