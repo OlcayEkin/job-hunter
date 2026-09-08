@@ -218,6 +218,18 @@ to the model as `fetched_jobs.json`:
 All three read their credentials from `chmod 600` files in `~/.job-hunter-automation/`
 (`rapidapi.env`, `apify.env`) — same pattern as `gmail.env`, never committed to git.
 
+- **`ats_search.py`** — FREE, no API key, no cost. Hits known companies' own ATS boards directly
+  via their public JSON APIs: Lever (`api.lever.co/v0/postings/<slug>?mode=json`) and Greenhouse
+  (`api.greenhouse.io/v1/boards/<slug>/jobs`). This is first-party data straight from the employer
+  — the single most trustworthy source of the four. Company→slug mapping is hardcoded in
+  `COMPANIES` in the script (found by probing — many companies checked, like Getir, Hepsiburada,
+  Trendyolgroup-as-a-slug, and Jotform, 404 on both platforms and are NOT covered; only add a
+  company here once you've confirmed its slug returns 200). Currently covers: Trendyol, Dream
+  Games, Peak Games, iyzico, Commencis (all Lever) and Insider (Greenhouse, slug `insider` not
+  `useinsider`). Extend this list opportunistically whenever a user mentions or you discover a
+  company's jobs.lever.co/greenhouse.io URL — it costs nothing to add and is more reliable than any
+  of the paid scrapers for the companies it does cover.
+
 **Bug #4: the fetched feed silently replaced the dashboard instead of adding to it.** The first
 version of the integration told `claude -p` to treat `fetched_jobs.json` as authoritative and
 rebuild the table from it. On 2026-09-08 that fired with a weak batch (RapidAPI's company search
