@@ -220,15 +220,28 @@ All three read their credentials from `chmod 600` files in `~/.job-hunter-automa
 
 - **`ats_search.py`** — FREE, no API key, no cost. Hits known companies' own ATS boards directly
   via their public JSON APIs: Lever (`api.lever.co/v0/postings/<slug>?mode=json`) and Greenhouse
-  (`api.greenhouse.io/v1/boards/<slug>/jobs`). This is first-party data straight from the employer
-  — the single most trustworthy source of the four. Company→slug mapping is hardcoded in
-  `COMPANIES` in the script (found by probing — many companies checked, like Getir, Hepsiburada,
-  Trendyolgroup-as-a-slug, and Jotform, 404 on both platforms and are NOT covered; only add a
-  company here once you've confirmed its slug returns 200). Currently covers: Trendyol, Dream
-  Games, Peak Games, iyzico, Commencis (all Lever) and Insider (Greenhouse, slug `insider` not
-  `useinsider`). Extend this list opportunistically whenever a user mentions or you discover a
-  company's jobs.lever.co/greenhouse.io URL — it costs nothing to add and is more reliable than any
-  of the paid scrapers for the companies it does cover.
+  (`api.greenhouse.io/v1/boards/<slug>/jobs?content=true`, giving plain-text-convertible job
+  descriptions plus structured `departments`/`offices`). This is first-party data straight from the
+  employer — the single most trustworthy source of the four, when the slug is actually right.
+  Company→slug mapping is hardcoded in `COMPANIES` in the script. Currently covers: Trendyol, Dream
+  Games, Peak Games, iyzico, Commencis (all Lever). Extend this list opportunistically whenever a
+  user mentions or you discover a company's jobs.lever.co/greenhouse.io URL — it costs nothing to
+  add and is more reliable than any of the paid scrapers for the companies it does cover.
+
+  **Bug #5 (same day): a slug returning HTTP 200 does not mean it's the right company.**
+  Greenhouse's `insider` slug was added assuming it was useinsider.com's Insider — it 200'd, had
+  plausible-looking job data, and even passed initial spot-checks. It was actually **Business
+  Insider**, the unrelated US media company (job titles: "Business Reporter, Singapore", "Senior
+  Video Editor" — evident only once you actually read the returned titles/locations, not from the
+  HTTP status). Caught only when checking real output content after adding `content=true`/richer
+  fields, not by the original 404-probing pass. No dashboard corruption happened this time purely
+  by luck — none of Business Insider's postings happened to match the `QA|Test|Quality|...` title
+  regex — but a company with, say, a "QA Editor" or "Quality" role in its title would have silently
+  polluted the dashboard as if it were the Turkish company. **Rule going forward: before adding any
+  slug to `COMPANIES`, fetch it with `--all` (bypassing the QA filter) and manually eyeball a few
+  job titles/locations against what you'd expect from the real company** — a 200 response is
+  necessary but never sufficient confirmation of identity. Removed the `insider` entry entirely
+  rather than guess at a correct slug; useinsider.com's actual ATS (if any) is still unconfirmed.
 
 **Bug #4: the fetched feed silently replaced the dashboard instead of adding to it.** The first
 version of the integration told `claude -p` to treat `fetched_jobs.json` as authoritative and
