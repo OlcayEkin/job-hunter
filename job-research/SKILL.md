@@ -191,6 +191,48 @@ documents two real production bugs that ate a debugging session each.
   keychain/session context the real GUI-domain agent has and produces misleading failures, e.g. a
   fake "Not logged in · Please run /login" from `claude`).
 
+## Deterministic data sources (2026-09-08)
+
+WebFetch/WebSearch inside `claude -p` was chronically unreliable for LinkedIn, kariyer.net, and
+Indeed Turkey — persistent HTTP 403s. Three dedicated scripts in `~/.job-hunter-automation/` now
+fetch real data deterministically before `claude -p` even runs, and their combined output is handed
+to the model as `fetched_jobs.json`:
+
+- **`linkedin_search.py`** — RapidAPI "Fresh LinkedIn Profile Data" (`fresh-linkedin-profile-data.p.rapidapi.com`,
+  key in `rapidapi.env`, free tier). Its `location`/`geo_code` filters on `/search-jobs` do **not
+  work** (verified extensively — identical results regardless of value) but `company_ids` does. So
+  it resolves company domains → numeric LinkedIn company IDs via `/get-company-by-domain` (cached in
+  `company_ids.json`) and searches within those specific companies instead of by city. Also note
+  `/search-jobs-v2` is dead (always returns empty `data: []`, even for `{}`... which instead returns
+  a validation error) — use `/search-jobs` (no v2).
+- **`kariyer_search.py`** — Apify actor `fatihtahta/kariyer-net-scraper` (id `us9SMropA0N5J0Au8`).
+  Real browser-based scraping, bypasses kariyer.net's 403s entirely. **Costs money**
+  (~$0.002-0.004/result, billed to the Apify account behind `apify.env`'s `APIFY_TOKEN`) — always
+  pass `--limit`, never rely on the actor's own default (50000).
+- **`indeed_search.py`** — Apify actor `misceres/indeed-scraper` (id `hMvNSpz3JnHgl5jkh`). Same
+  reasoning, bypasses tr.indeed.com's 403s. Also **paid** (~$0.005-0.006/result). Indeed's own
+  relevance ranking is loose (a "QA Manager" search returns Product Managers, Marketing Managers,
+  etc.), so all three scripts apply the same client-side title regex
+  (`\b(QA|Quality|Test|Kalite|SDET)\b`) via a `--qa-only` flag.
+
+All three read their credentials from `chmod 600` files in `~/.job-hunter-automation/`
+(`rapidapi.env`, `apify.env`) — same pattern as `gmail.env`, never committed to git.
+
+**Bug #4: the fetched feed silently replaced the dashboard instead of adding to it.** The first
+version of the integration told `claude -p` to treat `fetched_jobs.json` as authoritative and
+rebuild the table from it. On 2026-09-08 that fired with a weak batch (RapidAPI's company search
+legitimately returned 0 that run, and none of the three scripts cover Empatik HR at all), and the
+model interpreted "rebuild from this feed" as "this feed is now the whole picture" — it dropped all
+6 Empatik project-based rows and 6 of 7 previously-verified HIGH rows that just didn't happen to
+reappear in that day's narrower feed, shrinking the dashboard from 18 listings (7 HIGH) to 13 (1
+HIGH). Fixed by rewording the prompt to be explicit: start from the rows already in the target file,
+add/update using the fetched feed plus the model's own WebSearch/WebFetch (including Empatik), and
+**only remove a row if positively confirmed closed** — never drop it just because today's automated
+feed happened not to include it again. Recovered the lost rows via `git checkout HEAD -- job-dashboard-2026-05-30.html`
+(the last commit had the good 18-row version) before the next run. **If a run's listing count drops
+sharply with no confirmed-closed explanation in the summary, suspect this class of bug and check
+`git diff` against the last commit before trusting the new file.**
+
 **Three bugs already found and fixed here — don't reintroduce them:**
 
 1. **PATH.** launchd runs agents with a minimal `PATH=/usr/bin:/bin:/usr/sbin:/sbin` — it does not
